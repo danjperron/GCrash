@@ -123,7 +123,7 @@ void LDByteReadI2C(unsigned char i2cSlaveAddress, unsigned char Address, unsigne
     i2c_Restart();                      // Restart
     i2c_Address(i2cSlaveAddress, I2C_READ);   // Send slave address - read operation	
 
-    while(Length > 1)
+    while(Length-- > 1)
     *(Data++) = i2c_Read(1);            // Read one byte
     *(Data++) = i2c_Read(0);
     i2c_Stop();
