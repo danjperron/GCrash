@@ -110,8 +110,8 @@ near volatile unsigned short TimerCrash;   // Interrupt Timer counter in ms
 //  IDLE => Do nothing
 //  INFO =>  display every second the MPU6050 Data
 //  READY => Wait until the unit  drop. 
-//  DROP =>  output every 1/100 of second the peak G force
-//  HIT     =>  output for an other 0.5 second the data and at the end display the Peak acceleration force.
+//  DROP =>  output every 1/500 of second the peak G force
+//  HIT     =>  output for an other 1.0 second the data and at the end display the Peak acceleration force.
 
 
 
