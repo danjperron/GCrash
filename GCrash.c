@@ -404,7 +404,7 @@ void printVoltage(void)
   //       VDD =  2.048 * 1024 / (A/D Value)
   //  with the CentiValue
   //
-  //       VDD = 2097152 / (A/D Value)
+  //       VDD = 2097,152 / (A/D Value)
   //   
 
    unsigned short value;
