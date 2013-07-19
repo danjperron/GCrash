@@ -41,7 +41,7 @@
 
 /*  COMMUNICATION PROTOCOL
     
-      using TTL UART with fix baud at 9600, 8 bits data, no parity.
+      using TTL UART with fix baud at 115200, 8 bits data, no parity.
  
       ASCII COMMAND character
        [esc] 			-> IDLE  Go to idle mode (do nothing)
@@ -402,7 +402,7 @@ void printVersion(void)
 
 void printVoltage(void)
 {
-  // A/D use VDD has REFERENCE  and WE will check 2.048 Reference
+  // A/D use VDD has REFERENCE  and WE will check 2.048V Reference
   // so formula is   A/D Value = 2.048V * 1024 / VDD
   //         
   //  then
