@@ -135,12 +135,6 @@ char SerialBuffer[SERIAL_BUFFER_SIZE];
 
 
 
-
-// This is the Peak detected data
-// The MPU6050 is scan every ms and the biggest overall  GForce is kept. This is reset every time the data is read by the main program
-// We scan the MPU6050 every ms put we output signal every  at the maximum speed of the serial and string format which will  more than 1ms
-
-
 void Init1msTimer()   
 {
 
