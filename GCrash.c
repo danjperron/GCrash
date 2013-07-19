@@ -55,7 +55,7 @@
         V or v          -> Display Battery Voltage.
 
         
-       Record Format:   Everything in HEX Format (for speed, The PIC is too slow decode into decimal ascii)
+       Record Format:   Everything in HEX Format (for speed, The PIC is too slow to decode decimal ascii)
                TTTTXXXXYYYYZZZZ\r\n
         where TTTT is time in ms
          and  XXXX is acceleration on X axis (signed short integer)
