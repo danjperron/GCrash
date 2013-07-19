@@ -21,7 +21,7 @@ GCrash
     - ?                                 Display the release version.  (Idle mode only)
     - V or  v                           Display the battery voltage.  (Idle mode only)
 
-  The READY mode will automatically to DROP mode if all G values are smaller than 0.5 G and
+  The READY mode will automatically go to DROP mode if all G values are smaller than 0.5 G and
   from DROP to HIT if one of the G value is bigger than 1.5 G.
 
    Files Information
