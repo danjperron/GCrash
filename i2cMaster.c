@@ -12,7 +12,7 @@
 void i2c_Init(void){
 
    // Initialise I2C MSSP
-   // Master 100KHz
+   // Master 400KHz
    TRISA1=1;                    // set SCL and SDA pins as inputs
    TRISA2=1;
 

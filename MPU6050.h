@@ -110,8 +110,21 @@
 #define MPU6050_RA_FIFO_R_W 0x74
 #define MPU6050_RA_WHO_AM_I 0x75
 
-extern signed short ACCEL_XOUT,ACCEL_YOUT,ACCEL_ZOUT;
+
 
 int MPU6050_Test_I2C(void);
 void Setup_MPU6050(void);
 void Get_Accel_Values(void);
+unsigned char GotInt_MPU6050(void);
+
+
+typedef struct
+{
+  short Gx,Gy,Gz;
+  unsigned short Timer;
+  unsigned long SumSquare;
+}GForceStruct;
+
+
+extern GForceStruct  CurrentData;
+extern GForceStruct  PeakData;

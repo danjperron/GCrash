@@ -12,11 +12,10 @@ int MPU6050_Test_I2C(void)
  
     if(Data == 0x68)
     {
-       // printf("I2C Read Test Passed, MPU6050 Address: 0x%x\r\n", Data);
-       cputs("I2C Read Test Passed, MPU6050 Address: 0x68\r\n");       
- return(1);   
+      cputs("I2C Read Test Passed, MPU6050 Address: 0x68\r\n");       
+      return(1);   
    }
-     //printf("ERROR: I2C Read Test Failed, Stopping\r\n");
+     
    cputs("ERROR: I2C Read Test Failed, Stopping\r\n");
  
     return(0);
@@ -25,150 +24,151 @@ int MPU6050_Test_I2C(void)
 
 void Setup_MPU6050(void)
 {
-    //Sets sample rate to 8000/1+7 = 1000Hz
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_SMPLRT_DIV, 0x07);
-    //Disable FSync, 256Hz DLPF
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_CONFIG, 0x00);
+   int loop;
+   unsigned char TheReg;
+  
+// I need code space. Just create a table with register to clear
+const unsigned char MPU6050RegTable[]= {
+    MPU6050_RA_FF_THR,    		//Freefall threshold of |0mg|  LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FF_THR, 0x00);
+    MPU6050_RA_FF_DUR,    		//Freefall duration limit of 0   LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FF_DUR, 0x00);
+    MPU6050_RA_MOT_THR,		//Motion threshold of 0mg     LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_THR, 0x00);
+    MPU6050_RA_MOT_DUR,    		//Motion duration of 0s    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_DUR, 0x00);
+    MPU6050_RA_ZRMOT_THR,    	//Zero motion threshold    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_ZRMOT_THR, 0x00);
+    MPU6050_RA_ZRMOT_DUR,    	//Zero motion duration threshold    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_ZRMOT_DUR, 0x00);
+    MPU6050_RA_FIFO_EN,    		//Disable sensor output to FIFO buffer    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FIFO_EN, 0x00);
+    MPU6050_RA_I2C_MST_CTRL,    //AUX I2C setup    //Sets AUX I2C to single master control, plus other config    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_MST_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV0_ADDR,  //Setup AUX I2C slaves    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV0_REG,   	//    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_REG, 0x00);
+    MPU6050_RA_I2C_SLV0_CTRL,  	//    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV1_ADDR, // LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV1_REG,   //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_REG, 0x00);
+    MPU6050_RA_I2C_SLV1_CTRL,  //LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV2_ADDR,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV2_REG,    //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_REG, 0x00);
+    MPU6050_RA_I2C_SLV2_CTRL,   //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV3_ADDR,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV3_REG,    //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_REG, 0x00);
+    MPU6050_RA_I2C_SLV3_CTRL,   //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV4_ADDR,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV4_REG,   //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_REG, 0x00);
+    MPU6050_RA_I2C_SLV4_DO,     //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_DO, 0x00);
+    MPU6050_RA_I2C_SLV4_CTRL,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV4_DI,      //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_DI, 0x00);
+    MPU6050_RA_INT_PIN_CFG,     //MPU6050_RA_I2C_MST_STATUS //Read-only    //Setup INT pin and AUX I2C pass through    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_INT_PIN_CFG, 0x00);
+    MPU6050_RA_INT_ENABLE,    //Enable data ready interrupt      LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_INT_ENABLE, 0x00);
+    MPU6050_RA_I2C_SLV0_DO,  //Slave out, dont care    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_DO, 0x00);
+    MPU6050_RA_I2C_SLV1_DO,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_DO, 0x00);
+    MPU6050_RA_I2C_SLV2_DO,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_DO, 0x00);
+    MPU6050_RA_I2C_SLV3_DO,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_DO, 0x00);
+    MPU6050_RA_I2C_MST_DELAY_CTRL, //More slave config      LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_MST_DELAY_CTRL, 0x00);
+    MPU6050_RA_SIGNAL_PATH_RESET,  //Reset sensor signal paths    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_SIGNAL_PATH_RESET, 0x00);
+    MPU6050_RA_MOT_DETECT_CTRL,     //Motion detection control    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_DETECT_CTRL, 0x00);
+    MPU6050_RA_USER_CTRL,                 //Disables FIFO, AUX I2C, FIFO and I2C reset bits to 0    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_USER_CTRL, 0x00);
+    MPU6050_RA_CONFIG,                       //Disable FSync, 256Hz DLPF    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_CONFIG, 0x00);
+    MPU6050_RA_FF_THR,				   //Freefall threshold of |0mg|    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FF_THR, 0x00);
+    MPU6050_RA_FF_DUR,			       //Freefall duration limit of 0    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FF_DUR, 0x00);
+    MPU6050_RA_MOT_THR,                 //Motion threshold of 0mg    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_THR, 0x00);
+    MPU6050_RA_MOT_DUR,			    //Motion duration of 0s    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_DUR, 0x00);
+    MPU6050_RA_ZRMOT_THR,	    //Zero motion threshold    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_ZRMOT_THR, 0x00);
+    MPU6050_RA_ZRMOT_DUR,      //Zero motion duration threshold    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_ZRMOT_DUR, 0x00);
+    MPU6050_RA_FIFO_EN,		    //Disable sensor output to FIFO buffer    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FIFO_EN, 0x00);
+    MPU6050_RA_I2C_MST_CTRL,      //AUX I2C setup    //Sets AUX I2C to single master control, plus other config    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_MST_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV0_ADDR,    //Setup AUX I2C slaves    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV0_REG,    //LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_REG, 0x00);
+    MPU6050_RA_I2C_SLV0_CTRL,   //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV1_ADDR,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV1_REG,    //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_REG, 0x00);
+    MPU6050_RA_I2C_SLV1_CTRL,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV2_ADDR,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV2_REG,   //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_REG, 0x00);
+    MPU6050_RA_I2C_SLV2_CTRL,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV3_ADDR,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV3_REG,   //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_REG, 0x00);
+    MPU6050_RA_I2C_SLV3_CTRL, //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV4_ADDR, //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_ADDR, 0x00);
+    MPU6050_RA_I2C_SLV4_REG,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_REG, 0x00);
+    MPU6050_RA_I2C_SLV4_DO,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_DO, 0x00);
+    MPU6050_RA_I2C_SLV4_CTRL, //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_CTRL, 0x00);
+    MPU6050_RA_I2C_SLV4_DI,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_DI, 0x00);
+    MPU6050_RA_I2C_SLV0_DO,  //    //Slave out, dont care    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_DO, 0x00);
+    MPU6050_RA_I2C_SLV1_DO,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_DO, 0x00);
+    MPU6050_RA_I2C_SLV2_DO,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_DO, 0x00);
+    MPU6050_RA_I2C_SLV3_DO,  //    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_DO, 0x00);
+    MPU6050_RA_I2C_MST_DELAY_CTRL,  //More slave config    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_MST_DELAY_CTRL, 0x00);
+    MPU6050_RA_SIGNAL_PATH_RESET,      //Reset sensor signal paths    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_SIGNAL_PATH_RESET, 0x00);
+    MPU6050_RA_MOT_DETECT_CTRL,    //Motion detection control    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_DETECT_CTRL, 0x00);
+    MPU6050_RA_USER_CTRL,    //Disables FIFO, AUX I2C, FIFO and I2C reset bits to 0    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_USER_CTRL, 0x00);
+    MPU6050_RA_INT_PIN_CFG,    //MPU6050_RA_I2C_MST_STATUS //Read-only    //Setup INT pin and AUX I2C pass through    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_INT_PIN_CFG, 0x00);
+    MPU6050_RA_INT_ENABLE,    //Enable data ready interrupt    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_INT_ENABLE, 0x00);
+    MPU6050_RA_FIFO_R_W,       // LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FIFO_R_W, 0x00);
+    0xff
+};   
+
+
+
+//    //Sets sample rate to 8000/1+7 = 1000Hz
+//    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_SMPLRT_DIV, 0x07);
+    //Sets sample rate to 8000/1+15 = 500Hz
+    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_SMPLRT_DIV, 15);
     //Disable gyro self tests, scale of 500 degrees/s
     LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_GYRO_CONFIG, 0b00001000);
     //Disable accel self tests, scale of +-16g, no DHPF
     LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_ACCEL_CONFIG, 0x18);
-    //Freefall threshold of |0mg|
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FF_THR, 0x00);
-    //Freefall duration limit of 0
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FF_DUR, 0x00);
-    //Motion threshold of 0mg
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_THR, 0x00);
-    //Motion duration of 0s
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_DUR, 0x00);
-    //Zero motion threshold
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_ZRMOT_THR, 0x00);
-    //Zero motion duration threshold
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_ZRMOT_DUR, 0x00);
-    //Disable sensor output to FIFO buffer
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FIFO_EN, 0x00);
- 
-    //AUX I2C setup
-    //Sets AUX I2C to single master control, plus other config
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_MST_CTRL, 0x00);
-    //Setup AUX I2C slaves
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_ADDR, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_REG, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_CTRL, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_ADDR, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_REG, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_CTRL, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_ADDR, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_REG, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_CTRL, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_ADDR, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_REG, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_CTRL, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_ADDR, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_REG, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_DO, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_CTRL, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV4_DI, 0x00);
- 
-    //MPU6050_RA_I2C_MST_STATUS //Read-only
-    //Setup INT pin and AUX I2C pass through
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_INT_PIN_CFG, 0x00);
-    //Enable data ready interrupt
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_INT_ENABLE, 0x00);
- 
-    //MPU6050_RA_DMP_INT_STATUS        //Read-only
-    //MPU6050_RA_INT_STATUS 3A        //Read-only
-    //MPU6050_RA_ACCEL_XOUT_H         //Read-only
-    //MPU6050_RA_ACCEL_XOUT_L         //Read-only
-    //MPU6050_RA_ACCEL_YOUT_H         //Read-only
-    //MPU6050_RA_ACCEL_YOUT_L         //Read-only
-    //MPU6050_RA_ACCEL_ZOUT_H         //Read-only
-    //MPU6050_RA_ACCEL_ZOUT_L         //Read-only
-    //MPU6050_RA_TEMP_OUT_H         //Read-only
-    //MPU6050_RA_TEMP_OUT_L         //Read-only
-    //MPU6050_RA_GYRO_XOUT_H         //Read-only
-    //MPU6050_RA_GYRO_XOUT_L         //Read-only
-    //MPU6050_RA_GYRO_YOUT_H         //Read-only
-    //MPU6050_RA_GYRO_YOUT_L         //Read-only
-    //MPU6050_RA_GYRO_ZOUT_H         //Read-only
-    //MPU6050_RA_GYRO_ZOUT_L         //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_00     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_01     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_02     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_03     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_04     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_05     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_06     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_07     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_08     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_09     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_10     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_11     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_12     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_13     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_14     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_15     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_16     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_17     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_18     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_19     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_20     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_21     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_22     //Read-only
-    //MPU6050_RA_EXT_SENS_DATA_23     //Read-only
-    //MPU6050_RA_MOT_DETECT_STATUS     //Read-only
- 
-    //Slave out, dont care
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_DO, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV1_DO, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV2_DO, 0x00);
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV3_DO, 0x00);
-    //More slave config
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_I2C_MST_DELAY_CTRL, 0x00);
-    //Reset sensor signal paths
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_SIGNAL_PATH_RESET, 0x00);
-    //Motion detection control
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_MOT_DETECT_CTRL, 0x00);
-    //Disables FIFO, AUX I2C, FIFO and I2C reset bits to 0
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_USER_CTRL, 0x00);
+
+    loop=0;
+   do
+   {
+       TheReg = MPU6050RegTable[loop++];
+       if(TheReg==0xff) break;
+       LDByteWriteI2C(MPU6050_ADDRESS,TheReg,0);
+    }while(1);
+
+
+
     //Sets clock source to gyro reference w/ PLL
     LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_PWR_MGMT_1, 0b00000010);
     //Controls frequency of wakeups in accel low power mode plus the sensor standby modes
     LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_PWR_MGMT_2, 0x00);
-    //MPU6050_RA_BANK_SEL            //Not in datasheet
-    //MPU6050_RA_MEM_START_ADDR        //Not in datasheet
-    //MPU6050_RA_MEM_R_W            //Not in datasheet
-    //MPU6050_RA_DMP_CFG_1            //Not in datasheet
-    //MPU6050_RA_DMP_CFG_2            //Not in datasheet
-    //MPU6050_RA_FIFO_COUNTH        //Read-only
-    //MPU6050_RA_FIFO_COUNTL        //Read-only
-    //Data transfer to and from the FIFO buffer
-    LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_FIFO_R_W, 0x00);
-    //MPU6050_RA_WHO_AM_I             //Read-only, I2C address
  
+    //MPU6050_RA_WHO_AM_I             //Read-only, I2C address
+ LDByteWriteI2C(MPU6050_ADDRESS, MPU6050_RA_INT_ENABLE, 0x01);
     cputs("\r\nMPU6050 Setup Complete\r\n");
+
 }
 
 
-signed short ACCEL_XOUT,ACCEL_YOUT,ACCEL_ZOUT;
+
+
+
+
+GForceStruct  CurrentData;
+GForceStruct  PeakData;
+extern near volatile unsigned short Timerms;
 
 void Get_Accel_Values(void)
 {
-char ACCEL_XOUT_H;
-char ACCEL_XOUT_L;
-char ACCEL_YOUT_H;
-char ACCEL_YOUT_L;
-char ACCEL_ZOUT_H;
-char ACCEL_ZOUT_L;
+char cval[6];
+LDByteReadI2C(MPU6050_ADDRESS, MPU6050_RA_ACCEL_XOUT_H, cval, 6);
+      di();
+     CurrentData.Timer = Timerms;
+      ei(); 
+	CurrentData.Gx = ((cval[0]<<8)|cval[1]);
+	CurrentData.Gy = ((cval[2]<<8)|cval[3]);
+	CurrentData.Gz = ((cval[4]<<8)|cval[5]);
+// got a problem with Z axis Zero G at -204 numeric value
+//    CurrentData.Gz+=204;
+   }
 
-	LDByteReadI2C(MPU6050_ADDRESS, MPU6050_RA_ACCEL_XOUT_H, &ACCEL_XOUT_H, 1);
-	LDByteReadI2C(MPU6050_ADDRESS, MPU6050_RA_ACCEL_XOUT_L, &ACCEL_XOUT_L, 1);
-	LDByteReadI2C(MPU6050_ADDRESS, MPU6050_RA_ACCEL_YOUT_H, &ACCEL_YOUT_H, 1);
-	LDByteReadI2C(MPU6050_ADDRESS, MPU6050_RA_ACCEL_YOUT_L, &ACCEL_YOUT_L, 1);
-	LDByteReadI2C(MPU6050_ADDRESS, MPU6050_RA_ACCEL_ZOUT_H, &ACCEL_ZOUT_H, 1);
-	LDByteReadI2C(MPU6050_ADDRESS, MPU6050_RA_ACCEL_ZOUT_L, &ACCEL_ZOUT_L, 1);
- 
-	ACCEL_XOUT = ((ACCEL_XOUT_H<<8)|ACCEL_XOUT_L);
-	ACCEL_YOUT = ((ACCEL_YOUT_H<<8)|ACCEL_YOUT_L);
-	ACCEL_ZOUT = ((ACCEL_ZOUT_H<<8)|ACCEL_ZOUT_L);		
+
+
+
+unsigned char GotInt_MPU6050(void)
+{
+  unsigned char uc_temp;
+
+// Do we have a new data
+
+	LDByteReadI2C(MPU6050_ADDRESS,MPU6050_RA_INT_STATUS, &uc_temp, 1);
+
+  return ((uc_temp & 1) == 1 ? 1 : 0);
 }	
