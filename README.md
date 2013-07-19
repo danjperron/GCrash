@@ -13,7 +13,7 @@ GCrash
 
    the commands are,
 
-    - [esc]  			   IDLE MODE   Do nothing.
+    - [esc]  			    IDLE MODE   Do nothing.
     - G , g or [enter]		READY MODE  Wait for free fall.
     - D  or d				DROP MODE   Force system to trigger the drop.
     - H  or h				HIT MODE    Force system to trigger the crash.
