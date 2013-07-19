@@ -48,7 +48,7 @@
         G,g or enter	-> READY  Be ready for  free fall detection
         I or i          -> INFO   Display Acceleration info in G.
         D or d          -> DROP   Force free fall detection
-        H or I          -> HIT    Force Crash detection
+        H or h          -> HIT    Force Crash detection
 
       Command available in IDLE mode only
         ?               -> display Release version.
