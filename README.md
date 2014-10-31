@@ -1,9 +1,9 @@
 GCrash
 ======
 
-  A small PIC12F1840   will be use to get  the acceleration data from the MPU6050 and transfer it via the bluetooth HC04 device.
+  A small PIC12F1840   will be used to get  the acceleration data from the MPU6050 and transfer it via the bluetooth HC04 device.
 
-  The transfer rate is 500 samples/sec  but could be increase to 1000 if you the baud rate is set from 115200 to 230400. 
+  The transfer rate is 500 samples/sec  but could be increase to 1000 ifthe baud rate is set from 115200 to 230400. 
 
 
   This is a sample program to demonstrate how to implement a small cpu to transfer data.
